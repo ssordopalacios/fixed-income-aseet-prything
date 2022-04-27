@@ -4,31 +4,61 @@ import numpy as np
 def compound(r, n, T, n_infinity):
     """Calculate investment returns "added" into principal as time goes on
 
-    The problem is that an interest rate is not well defined without a
-    compounding frequency. They result in quintessentially differenet solutions.
-    This process is the opposite of discounting. There are two equations below
-    because the solution depends on the size of n that we choose. If we choose
-    an extremely large n, then the equation converges to a value that can be
-    represented in simpler terms.
+    Note
+    ----
+    An interest rate is not well defined without a compounding frequency. The
+    range of possible outcomes between frequencies is infinite. This process,
+    which is the opposite of discounting, will calculate the result of investing
+    $1 right now (at time t = 0) at an interest rate, r, for T periods where
+    interest is compounded n times per period.
 
-    Args:
-        r (int): the interest rate
-        n (int): the compounding frequency
-        T (int): the horizon
-        n_infinity (logical): if n approaches infinity
+    There are two equations below because the solution depends on the size of
+    n that we choose. If we choose an extremely large n, then the equation
+    converges to a value that can be represented in simpler terms.
 
-    Returns:
-        int: The value that will be reached at the end of the compounding
+    The value returned is then a percent that can be used to "scale" your value
+    (i.e., the value you want to correct) to the correct amount which allows
+    you to do a comparison in units that you can understand.
+
+    Parameters
+    ----------
+    r : float
+        the interest rate being invested at (e.g., 0.038 = 3.8%)
+    n : int
+        the compounding frequency (e.g., n payments per year)
+    T : int
+        the periods (e.g., T years) of the investment
+    n_infinity : logical
+        whether n approaches infinity
+
+    Returns
+    -------
+    float
+        The value of $1 at the end of compounding
     """
+
+    # Use the first option if we chose n to go to infinity
+    # $\lim_{n \to \infty}(1+\frac{r}{n}))^{n \cdot T} = e^{r \cdot T}$
+
     if n_infinity:
+        # $e^{r \cdot T}$
+        # Think about it this way:
         ret = np.exp(r * T)
     else:
+        # $(1 + \frac{r}{n})^{n \cdot t}
+        # Think about it this way: (1 + r/n) gives you the amount that you get
+        # for each payment. And you get n payments over T periods. So to get
+        # the final answer you take the multiplication of all of them to the
+        # power of n times T
         ret = (1 + r / n) ** (n * T)
     return ret
 
 
 def discount(r, n, T, n_infinity):
     """Find value needed to receive interest rate over time T
+
+    The amount investment now that results in $1 given a rate r compounded n
+    times per period
 
     The question, "what is the amount we have to invest today to have $1
     dollar in the future, given a rate r compounded n times per year? This
@@ -95,3 +125,4 @@ def discount_factor(r, t, T):
 
     ret = np.exp(-r[t, T] * (T - t))
     return ret
+

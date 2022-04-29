@@ -53,7 +53,7 @@ def compound(r: float, n: int, T: int, n_infinity=True) -> float:
     return ret
 
 
-def discount(r, n, T, n_infinity):
+def discount(r, n, T, n_infinity=True):
     """Find value needed to receive interest rate over time T
 
     The amount investment now that results in $1 given a rate r compounded n
@@ -80,7 +80,7 @@ def discount(r, n, T, n_infinity):
     return res
 
 
-def rate_from_discount(n, Z_T, T, n_infinity):
+def rate_from_discount(n, Z_T, T, n_infinity=True):
     """Given discount Z_T, derive the rate r_n for any compounding frequency n.
 
     We can then choose the frequencies ourselves to get us there. This will
@@ -122,4 +122,47 @@ def discount_factor(r, t, T):
 
     ret = np.exp(-r[t, T] * (T - t))
     return ret
+
+
+def coupon_bond_price(r, t, T, c, freq=2, principal=100):
+    """The price of a coupon bond at time t
+
+    Parameters
+    ----------
+    r : ndarray
+        array of continuously compounded yield at time for an
+        investment up to time T
+    T : ndarray
+        array of the maturities
+    c : int
+        The coupon amount of the bond semi-annually
+    freq : int
+        The coupon payment frequency, by default 2
+    principal : int, optional
+        The principal amount of the bond, by default 100
+    """
+
+    # Find the number of maturities
+    n = len(T)
+
+    # Calculate the value of each coupon payment
+    coupon_pmt = 0
+    for i in range(1, n):
+        coupon_pmt += (c / freq) / discount(
+            r[t, T[i]], freq, T[i] - t, n_infinity=False
+        )
+
+    # Calculate the value of the principal payment
+    principal_pmt = principal / discount(
+        r[t, T[n]], freq, T[n] - t, n_infinity=False
+    )
+
+    # Return the price
+    return coupon_pmt + principal_pmt
+
+
+if __name__ == "__main__":
+    r = np.array([[1, 2, 3, 4, 5], [1, 2, 3, 4, 5]])
+    T = np.array([1, 2, 3, 4, 5])
+    coupon_bond_price(r, 1, T, 0.03)
 
